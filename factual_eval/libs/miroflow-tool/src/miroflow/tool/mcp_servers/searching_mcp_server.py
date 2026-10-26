@@ -57,8 +57,8 @@ async def google_search(
         arguments["tbs"] = tbs
     server_params = StdioServerParameters(
         command="npx",
-        args=["-y", "serper-search-scrape-mcp-server"],
-        env={"SERPER_API_KEY": SERPER_API_KEY},
+        args=["-y", os.getenv("SERPER_MCP_PACKAGE") or "serper-search-scrape-mcp-server"],
+        env={"SERPER_API_KEY": SERPER_API_KEY, "SERPER_BASE_URL": os.getenv("SERPER_BASE_URL") or "https://google.serper.dev"},
     )
     result_content = ""
     retry_count = 0

@@ -182,7 +182,11 @@ class ToolManager(ToolManagerProtocol):
                                     {
                                         "name": tool.name,
                                         "description": tool.description,
-                                        "schema": tool.inputSchema,
+                                        "schema": getattr(
+                                            tool,
+                                            "input_schema",
+                                            getattr(tool, "inputSchema", None),
+                                        ),
                                     }
                                 )
                 elif isinstance(server_params, str) and server_params.startswith(
@@ -203,7 +207,11 @@ class ToolManager(ToolManagerProtocol):
                                     {
                                         "name": tool.name,
                                         "description": tool.description,
-                                        "schema": tool.inputSchema,
+                                        "schema": getattr(
+                                            tool,
+                                            "input_schema",
+                                            getattr(tool, "inputSchema", None),
+                                        ),
                                     }
                                 )
                 else:
@@ -251,6 +259,22 @@ class ToolManager(ToolManagerProtocol):
                 "server_name": server_name,
                 "tool_name": tool_name,
                 "error": f"Server '{server_name}' not found.",
+            }
+
+        if (
+            server_name == "tool-serper-search"
+            and tool_name == "scrape"
+            and isinstance(server_params, StdioServerParameters)
+            and (
+                (server_params.env or {}).get("SERPER_BASE_URL")
+                or "https://google.serper.dev"
+            ).rstrip("/")
+            != "https://google.serper.dev"
+        ):
+            return {
+                "server_name": server_name,
+                "tool_name": tool_name,
+                "error": "Alternate search endpoints do not configure the separate scrape endpoint; use another scraping fallback.",
             }
 
         logger.info(

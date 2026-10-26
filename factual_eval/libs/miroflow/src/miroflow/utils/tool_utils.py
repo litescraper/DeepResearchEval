@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import sys
 
 from mcp import StdioServerParameters
@@ -154,6 +155,10 @@ def create_mcp_server_parameters(
         OmegaConf.is_missing(cfg, "env.serper_api_key")
         or OmegaConf.is_missing(cfg, "env.jina_api_key")
     ):
+        serper_base_url = os.getenv("SERPER_BASE_URL") or "https://google.serper.dev"
+        serper_mcp_package = (
+            os.getenv("SERPER_MCP_PACKAGE") or "serper-search-scrape-mcp-server"
+        )
         if (
             agent_cfg.get("tools", None) is not None
             and "tool-serper-search" in agent_cfg["tools"]
@@ -163,8 +168,11 @@ def create_mcp_server_parameters(
                     "name": "tool-serper-search",
                     "params": StdioServerParameters(
                         command="npx",
-                        args=["-y", "serper-search-scrape-mcp-server"],
-                        env={"SERPER_API_KEY": cfg.env.serper_api_key},
+                        args=["-y", serper_mcp_package],
+                        env={
+                            "SERPER_API_KEY": cfg.env.serper_api_key,
+                            "SERPER_BASE_URL": serper_base_url,
+                        },
                     ),
                 }
             )
@@ -185,6 +193,8 @@ def create_mcp_server_parameters(
                             "SERPER_API_KEY": cfg.env.serper_api_key,
                             "JINA_API_KEY": cfg.env.jina_api_key,
                             "GEMINI_API_KEY": cfg.env.gemini_api_key,
+                            "SERPER_BASE_URL": serper_base_url,
+                            "SERPER_MCP_PACKAGE": serper_mcp_package,
                         },
                     ),
                 }
@@ -197,6 +207,10 @@ def create_mcp_server_parameters(
     blacklist = set()
     for black_list_item in agent_cfg.get("tool_blacklist", []):
         blacklist.add((black_list_item[0], black_list_item[1]))
+    if (os.getenv("SERPER_BASE_URL") or "https://google.serper.dev").rstrip(
+        "/"
+    ) != "https://google.serper.dev":
+        blacklist.add(("tool-serper-search", "scrape"))
     return configs, blacklist
 
 
