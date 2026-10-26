@@ -152,6 +152,10 @@ async def scrape_serper(url: str) -> tuple[str, str]:
             "[ERROR]: SERPER_API_KEY is not set, scrape_website tool is not available.",
         )
 
+    # The MCP server's scrape URL is separate from its configurable search URL.
+    if (os.getenv("SERPER_BASE_URL") or "https://google.serper.dev").rstrip("/") != "https://google.serper.dev":
+        return None, "[ERROR]: Alternate search endpoints do not configure the MCP scrape endpoint; use another scraping fallback."
+
     server_params = StdioServerParameters(
         command="npx",
         args=["-y", "serper-search-scrape-mcp-server"],

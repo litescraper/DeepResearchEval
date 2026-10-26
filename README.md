@@ -109,6 +109,28 @@ target_models:
   - "bbb"
 ```
 
+### Optional Serper-compatible endpoint for factual search
+
+Support any Serper.dev-compatible endpoint (like litescrape.com, serpbase.dev, serpensapi.org, and others)
+
+Set `SERPER_BASE_URL` to a base URL without `/search` and provide the selected
+provider's key as `SERPER_API_KEY`. The factual evaluator forwards both
+settings to its search MCP subprocess. The default URL and package
+remain unchanged when the settings are absent. An unset or empty
+`SERPER_BASE_URL` keeps the default URL. Unset or empty `SERPER_MCP_PACKAGE`
+keeps the default package. Custom path prefixes and trailing
+slashes are handled by the selected endpoint-aware MCP build.
+
+This requires an endpoint-aware `serper-search-scrape-mcp-server` build that
+reads `SERPER_BASE_URL`. Set `SERPER_MCP_PACKAGE` to that installable package
+or local build path for `npx`, if the default published package lacks this
+capability. Environment forwarding alone cannot configure a server that
+ignores the variable. The selected service must implement the existing
+`/search` contract. MCP scraping uses its separate Serper URL and is disabled
+when an alternate search base is configured, so that another provider's key
+is not sent to that unchanged host. Jina and other scraping fallbacks are
+unchanged.
+
 ### Active Fact-Checking
 
 For active fact-checking, we implement a fact-checking agent based on [MiroFlow](https://github.com/MiroMindAI/MiroFlow).
